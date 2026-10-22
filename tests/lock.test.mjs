@@ -1,0 +1,5 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {createLock} from '../lock-state.mjs';
+function setup(){let task;const changes=[];const lock=createLock(v=>changes.push(v),1000,{setTimeout(fn,ms){assert.equal(ms,1000);task=fn;return 1;},clearTimeout(){task=null;}});return{lock,changes,tick(){task?.();}};}
+test('solo mantener un segundo desbloquea',()=>{const s=setup();s.lock.lock();assert.equal(s.lock.locked,true);s.lock.hold();assert.equal(s.lock.locked,true);s.tick();assert.equal(s.lock.locked,false);assert.deepEqual(s.changes,[true,false]);});
+test('soltar o cancelar antes de tiempo conserva bloqueo',()=>{for(let i=0;i<4;i++){const s=setup();s.lock.lock();s.lock.hold();s.lock.cancel();s.tick();assert.equal(s.lock.locked,true);}});
+test('cancelar no cambia ajustes ni bloqueo; nuevo intento exige otro segundo',()=>{const s=setup();s.lock.lock();s.lock.hold();s.lock.cancel();s.lock.hold();assert.equal(s.lock.locked,true);s.tick();assert.equal(s.lock.locked,false);});
