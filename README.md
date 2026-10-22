@@ -20,7 +20,7 @@ En Android abre la URL HTTPS publicada con Chrome y usa **Instalar aplicación**
 
 ## Uso
 
-1. Pega un enlace directo accesible a una imagen, o sube un archivo.
+1. Copia una imagen y pulsa **Pegar imagen**, pega con Ctrl + V, usa un enlace directo accesible o sube un archivo. El botón solicita acceso al portapapeles solo al pulsarlo. Si el navegador lo rechaza o no admite imágenes, se indica cómo usar la carga de archivo. No se lee ni se muestra texto del portapapeles.
 2. Arrastra para posicionar, cambia el tamaño y gira. Encajar conserva proporciones.
 3. Pulsa Calcar: solicita Fullscreen API real y bloquea la interfaz. Si la API falla, aparece una explicación.
 4. Solo mantener pulsado el candado durante un segundo devuelve los controles. Soltar, cancelar, perder el foco o cambiar de pantalla cancela la pulsación. Salir de pantalla completa conserva bloqueo y ajustes.
@@ -34,4 +34,6 @@ npm test
 npm run build
 ```
 
-Las seis pruebas automatizadas y la compilación pasaron. La vista local respondió con HTTP 200 y se confirmó visualmente en el navegador. Queda pendiente comprobar la adaptación en dispositivos reales, instalación/offline, Fullscreen y Wake Lock en Chrome Android y una tablet física. Los servidores de prueba se cerraron después de la revisión.
+Las doce pruebas automatizadas y la compilación pasaron. La vista local respondió con HTTP 200 y se confirmó visualmente en el navegador. Queda pendiente comprobar la adaptación en dispositivos reales, instalación/offline, Fullscreen y Wake Lock en Chrome Android y una tablet física. Los servidores de prueba se cerraron después de la revisión.
+
+

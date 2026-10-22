@@ -9,6 +9,27 @@ const lock=createLock(locked=>{drag=null;document.body.classList.toggle('locked'
 async function loadImage(src,isFile=false){const version=++loadVersion;const candidate=new Image();say('Cargando imagen…');$('load').disabled=true;try{await new Promise((resolve,reject)=>{const timer=setTimeout(()=>{candidate.src='';reject(new Error('timeout'));},15000);candidate.onload=()=>{clearTimeout(timer);resolve();};candidate.onerror=()=>{clearTimeout(timer);reject(new Error('load'));};candidate.src=src;});if(version!==loadVersion||lock.locked){if(isFile)URL.revokeObjectURL(src);return;}if(objectURL)URL.revokeObjectURL(objectURL);objectURL=isFile?src:null;pic.src=src;await pic.decode();loaded=true;angle=0;fit();$('empty').hidden=true;$('empty').style.display='none';$('trace').disabled=false;say(isFile?'Imagen lista. Se conserva mientras esta página esté abierta.':'Imagen lista. Para usarla sin conexión, súbela como archivo.');}catch{if(isFile)URL.revokeObjectURL(src);if(version===loadVersion)say('No se pudo cargar. Usa un enlace directo accesible o descarga la imagen y súbela como archivo.');}finally{if(version===loadVersion)$('load').disabled=false;}}
 $('loadForm').addEventListener('submit',e=>{e.preventDefault();if(lock.locked)return;try{const url=new URL($('url').value);if(!['https:','http:'].includes(url.protocol))throw Error();loadImage(url.href);}catch{say('Introduce un enlace http o https directo a una imagen.');}});
 $('file').addEventListener('change',()=>{if(!lock.locked&&$('file').files[0])loadImage(URL.createObjectURL($('file').files[0]),true);$('file').value='';});
+let pastePending=false;
+$('paste').onclick=async()=>{
+  if(lock.locked||pastePending)return;
+  if(!navigator.clipboard?.read){say('Este navegador no permite pegar imágenes con el botón. Prueba Ctrl + V o usa Subir una imagen.');return;}
+  pastePending=true;$('paste').disabled=true;
+  try{
+    const items=await navigator.clipboard.read();
+    if(lock.locked)return;
+    for(const item of items){
+      const type=item.types.find(type=>type.startsWith('image/'));
+      if(type){const blob=await item.getType(type);if(!lock.locked)await loadImage(URL.createObjectURL(blob),true);return;}
+    }
+    say('No hay una imagen copiada. Elige «Copiar imagen» y vuelve a pegar. Si copiaste un enlace, pégalo en el campo de enlace.');
+  }catch{if(!lock.locked)say('No se pudo acceder a la imagen copiada. Permite el acceso al portapapeles si el navegador lo solicita, o usa Subir una imagen.');}
+  finally{pastePending=false;$('paste').disabled=false;}
+};
+document.addEventListener('paste',e=>{
+  if(lock.locked){e.preventDefault();return;}
+  const file=Array.from(e.clipboardData?.items||[]).find(item=>item.kind==='file'&&item.type.startsWith('image/'))?.getAsFile();
+  if(file){e.preventDefault();loadImage(URL.createObjectURL(file),true);}
+});
 $('size').addEventListener('input',()=>{if(!lock.locked){scale=Number($('size').value)/100;render();}});
 $('left').onclick=()=>{if(loaded&&!lock.locked){angle=(angle-90)%360;render();}};
 $('fit').onclick=()=>{if(loaded&&!lock.locked)fit();};$('reset').onclick=()=>{if(loaded&&!lock.locked){angle=0;fit();}};
